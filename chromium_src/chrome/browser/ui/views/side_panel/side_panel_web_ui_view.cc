@@ -39,7 +39,6 @@ void SidePanelWebUIView::AddedToWidget() {
   auto* profile = Profile::FromBrowserContext(
       contents_wrapper_->web_contents()->GetBrowserContext());
   if (profile->GetPrefs()->GetBoolean(kWebViewRoundedCorners)) {
-    constexpr auto kRadius = BraveContentsViewUtil::kBorderRadius;
-    holder()->SetCornerRadii(gfx::RoundedCornersF(kRadius));
+    holder()->SetCornerRadii(BraveContentsViewUtil::GetBorderRadius());
   }
 }
