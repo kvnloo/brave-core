@@ -7,6 +7,7 @@
 #define BRAVE_COMPONENTS_EMAIL_ALIASES_EMAIL_ALIASES_SERVICE_H_
 
 #include <memory>
+#include <set>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -31,6 +32,12 @@ class SimpleURLLoader;
 
 namespace email_aliases {
 
+class EmailAliasesBubbleObserver {
+ public:
+  virtual void OnAliasCreationComplete(const std::optional<std::string>& email) = 0;
+  virtual void OnInvokeManageAliases() = 0;
+};
+
 // The EmailAliasesService is responsible for managing the email aliases for a
 // user. It is used to request authentication, generate aliases, update aliases,
 // and delete aliases. It also provides a way to observe the authentication
@@ -41,7 +48,7 @@ namespace email_aliases {
 class EmailAliasesService : public KeyedService,
                             public mojom::EmailAliasesService {
  public:
-  EmailAliasesService(
+  explicit EmailAliasesService(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~EmailAliasesService() override;
 
@@ -78,6 +85,13 @@ class EmailAliasesService : public KeyedService,
   // will immediately receive the current state upon registration.
   void AddObserver(mojo::PendingRemote<mojom::EmailAliasesServiceObserver>
                        observer) override;
+
+  // Returns true if the user is ready to create a new alias.
+  bool IsReadyToCreate() const;
+
+  // Registers/unregisters a bubble observer for alias creation completion.
+  void AddBubbleObserver(EmailAliasesBubbleObserver* observer);
+  void RemoveBubbleObserver(EmailAliasesBubbleObserver* observer);
 
   // Binds the mojom interface to this service
   // Adds a new receiver for the EmailAliasesService Mojo interface.
@@ -164,6 +178,13 @@ class EmailAliasesService : public KeyedService,
       bool update_expected,
       std::optional<std::string> response_body);
 
+  // Called by the UI to indicate alias creation flow completed.
+  void NotifyAliasCreationComplete(
+      const std::optional<std::string>& email) override;
+
+  // Called by the UI to show the settings page.
+  void InvokeManageAliases() override;
+
   // Bound Mojo receivers for the EmailAliasesService interface.
   mojo::ReceiverSet<mojom::EmailAliasesService> receivers_;
 
@@ -203,6 +224,15 @@ class EmailAliasesService : public KeyedService,
   // Elapsed timer for the current verification polling window. Used to
   // enforce a maximum total polling duration.
   std::optional<base::ElapsedTimer> session_poll_elapsed_timer_;
+
+  // Number of aliases created by the user.
+  int number_of_aliases_ = 0;
+
+  // Maximum number of aliases allowed for the user.
+  const int max_aliases_ = 5;
+
+  // Observers that receive email alias creation updates.
+std::set<EmailAliasesBubbleObserver*> email_aliases_bubble_observers_;
 
   // WeakPtrFactory to safely bind callbacks across async network operations.
   base::WeakPtrFactory<EmailAliasesService> weak_factory_{this};
