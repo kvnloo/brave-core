@@ -9,12 +9,25 @@
 
 namespace local_ai {
 
+// static
+CandleService* CandleService::GetInstance() {
+  static base::NoDestructor<CandleService> instance;
+  return instance.get();
+}
+
 CandleService::CandleService() = default;
 CandleService::~CandleService() = default;
+
+void CandleService::BindReceiver(
+    mojo::PendingReceiver<mojom::CandleService> receiver) {
+  receivers_.Add(this, std::move(receiver));
+}
 
 void CandleService::BindBert(
     mojo::PendingRemote<mojom::BertInterface> pending_remote) {
   bert_remote_.Bind(std::move(pending_remote));
+  // Run immediately when bound for easy POC purpose only
+  RunBertExample();
 }
 
 void CandleService::RunBertExample() {
