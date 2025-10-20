@@ -108,13 +108,13 @@ concept IsExpected = requires(T expected) {
 };
 
 template <typename F, typename ResponseType>
-concept ResponseHandler = requires(F f, ResponseType param) {
+concept ResponseTransformer = requires(F f, ResponseType param) {
   requires std::invocable<F, decltype(param)>;
   requires IsExpected<std::invoke_result_t<F, ResponseType>>;
 };
 
 template <typename F, typename ErrorType>
-concept ErrorHandler = requires(F f) {
+concept ErrorTransformer = requires(F f) {
   requires std::invocable<F>;
   requires std::convertible_to<std::invoke_result_t<F>, ErrorType>;
 };
