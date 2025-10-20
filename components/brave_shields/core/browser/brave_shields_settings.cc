@@ -7,6 +7,7 @@
 
 #include "brave/components/brave_shields/core/browser/brave_shields_utils.h"
 #include "brave/components/brave_shields/core/common/brave_shield_utils.h"
+#include "brave/components/content_settings/core/common/content_settings_util.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/prefs/pref_service.h"
 #include "url/gurl.h"
@@ -172,11 +173,21 @@ mojom::AutoShredMode BraveShieldsSettings::GetDefaultAutoShredMode() {
 
 void BraveShieldsSettings::SetAutoShredMode(mojom::AutoShredMode mode,
                                             const GURL& url) {
-  brave_shields::SetAutoShredMode(&*host_content_settings_map_, mode, url);
+  auto primary_pattern = content_settings::CreateDomainPattern(url);
+
+  if (!primary_pattern.IsValid()) {
+    return;
+  }
+
+  host_content_settings_map_->SetWebsiteSettingCustomScope(
+      primary_pattern, ContentSettingsPattern::Wildcard(),
+      AutoShredSetting::kContentSettingsType, AutoShredSetting::ToValue(mode));
 }
 
 mojom::AutoShredMode BraveShieldsSettings::GetAutoShredMode(const GURL& url) {
-  return brave_shields::GetAutoShredMode(&*host_content_settings_map_, url);
+  return AutoShredSetting::FromValue(
+      host_content_settings_map_->GetWebsiteSetting(
+          url, GURL(), AutoShredSetting::kContentSettingsType));
 }
 
 }  // namespace brave_shields
