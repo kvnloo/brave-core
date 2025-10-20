@@ -99,6 +99,26 @@ concept Endpoint =
     } && Request<typename T::Request> && Response<typename T::Response> &&
     Error<typename T::Error> && detail::URL<T> && detail::Method<T>;
 
+template <typename T>
+concept IsExpected = requires(T expected) {
+  typename T::value_type;
+  typename T::error_type;
+  requires std::same_as<
+      T, base::expected<typename T::value_type, typename T::error_type>>;
+};
+
+template <typename F, typename ResponseType>
+concept ResponseHandler = requires(F f, ResponseType param) {
+  requires std::invocable<F, decltype(param)>;
+  requires IsExpected<std::invoke_result_t<F, ResponseType>>;
+};
+
+template <typename F, typename ErrorType>
+concept ErrorHandler = requires(F f) {
+  requires std::invocable<F>;
+  requires std::convertible_to<std::invoke_result_t<F>, ErrorType>;
+};
+
 }  // namespace brave_account::endpoint_client::concepts
 
 #endif  // BRAVE_COMPONENTS_BRAVE_ACCOUNT_ENDPOINT_CLIENT_CONCEPTS_H_

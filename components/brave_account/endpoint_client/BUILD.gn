@@ -7,6 +7,7 @@ source_set("endpoint_client") {
   sources = [
     "client.h",
     "concepts.h",
+    "functions.h",
   ]
 
   deps = [
