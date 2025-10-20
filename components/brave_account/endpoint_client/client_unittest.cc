@@ -61,6 +61,23 @@ struct Message {
   std::string text;
 };
 
+template <typename Reply>
+std::string GetErrorMessage(const Reply& r) {
+  if (r.has_value()) {
+    return {};
+  }
+  if (const auto* network =
+          std::get_if<brave_account::endpoint_client::NetworkError>(
+              &r.error())) {
+    return network->error_message;
+  } else if (const auto* parse =
+                 std::get_if<brave_account::endpoint_client::ParseError>(
+                     &r.error())) {
+    return parse->error_message;
+  }
+  return "Invalid endpoint error";
+}
+
 inline constexpr char kRequestKey[] = "request";
 inline constexpr char kResponseKey[] = "response";
 inline constexpr char kErrorKey[] = "error";
@@ -95,8 +112,7 @@ struct TestEndpoint {
   static std::string_view Method() { return "POST"; }
 };
 
-using Expected =
-    base::expected<std::optional<TestResponse>, std::optional<TestError>>;
+using Expected = Reply<TestEndpoint>;
 
 struct TestCase {
   TestRequest request;
@@ -161,19 +177,21 @@ TEST_P(ClientTest, Send) {
       }));
 
   base::RunLoop run_loop;
-  base::MockCallback<base::OnceCallback<void(int, Expected)>> callback;
-  EXPECT_CALL(callback, Run(test_case.status_code, test_case.expected_reply))
-      .Times(1)
-      .WillOnce([&] { run_loop.Quit(); });
+  auto callback =
+      base::BindLambdaForTesting([&](int response_code, Expected reply) {
+        EXPECT_EQ(response_code, static_cast<int>(test_case.status_code));
+        EXPECT_EQ(reply, test_case.expected_reply) << GetErrorMessage(reply);
+        run_loop.Quit();
+      });
 
   if (test_case.with_headers) {
     WithHeaders<TestRequest> request{test_case.request};
     request.headers.SetHeader("Authorization", "Bearer 12345");
     Client<TestEndpoint>::Send(api_request_helper_, std::move(request),
-                               callback.Get());
+                               std::move(callback));
   } else {
     Client<TestEndpoint>::Send(api_request_helper_, test_case.request,
-                               callback.Get());
+                               std::move(callback));
   }
 
   run_loop.Run();
@@ -187,12 +205,13 @@ INSTANTIATE_TEST_SUITE_P(
                  .with_headers = false,
                  .status_code = net::HTTP_OK,
                  .server_reply = R"({"response": "some response"})",
-                 .expected_reply = TestResponse("some response")},
+                 .expected_reply = base::ok(TestResponse("some response"))},
         TestCase{.request = TestRequest("invalid response"),
                  .with_headers = false,
                  .status_code = net::HTTP_CREATED,
                  .server_reply = R"({"invalid": response})",
-                 .expected_reply = Expected(std::nullopt)},
+                 .expected_reply = base::unexpected(
+                     ParseError("expected value at line 1 column 13"))},
         TestCase{.request = TestRequest("valid error"),
                  .with_headers = false,
                  .status_code = net::HTTP_BAD_REQUEST,
@@ -202,7 +221,14 @@ INSTANTIATE_TEST_SUITE_P(
                  .with_headers = false,
                  .status_code = net::HTTP_UNAUTHORIZED,
                  .server_reply = R"({"invalid": error})",
-                 .expected_reply = base::unexpected(std::nullopt)},
+                 .expected_reply = base::unexpected(
+                     ParseError("expected value at line 1 column 13"))},
+        TestCase{.request = TestRequest("invalid error structure"),
+                 .with_headers = false,
+                 .status_code = net::HTTP_UNAUTHORIZED,
+                 .server_reply = R"({"invalid": "error"})",
+                 .expected_reply = base::unexpected(
+                     ParseError("Can't parse endpoint Error"))},
         TestCase{.request = TestRequest("request with headers"),
                  .with_headers = true,
                  .status_code = net::HTTP_OK,
