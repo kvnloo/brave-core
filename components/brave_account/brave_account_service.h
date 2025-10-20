@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/types/expected.h"
 #include "brave/components/api_request_helper/api_request_helper.h"
+#include "brave/components/brave_account/endpoint_client/client.h"
 #include "brave/components/brave_account/endpoints/error.h"
 #include "brave/components/brave_account/endpoints/password_finalize.h"
 #include "brave/components/brave_account/endpoints/password_init.h"
@@ -71,18 +72,16 @@ class BraveAccountService : public KeyedService, public mojom::Authentication {
   void OnRegisterInitialize(
       RegisterInitializeCallback callback,
       int response_code,
-      base::expected<std::optional<endpoints::PasswordInit::Response>,
-                     std::optional<endpoints::PasswordInit::Error>> reply);
+      endpoint_client::Reply<endpoints::PasswordInit> reply);
 
   void OnRegisterFinalize(
       RegisterFinalizeCallback callback,
       const std::string& encrypted_verification_token,
       int response_code,
-      base::expected<std::optional<endpoints::PasswordFinalize::Response>,
-                     std::optional<endpoints::PasswordFinalize::Error>> reply);
+      endpoint_client::Reply<endpoints::PasswordFinalize> reply);
 
   std::optional<mojom::RegisterErrorCode> TransformError(
-      std::optional<endpoints::Error> error);
+      endpoints::Error error);
 
   const raw_ptr<PrefService> pref_service_;
   std::unique_ptr<api_request_helper::APIRequestHelper> api_request_helper_;
