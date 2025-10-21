@@ -14,6 +14,8 @@
 
 namespace tabs {
 
+class TreeTabNode;
+
 // TreeTabNodeTabCollection is a specialized TabCollection that represents a
 // node in the tree structure of tabs. It contains a current tab and can have
 // child collections, such as other TreeTabNodeTabCollections,
@@ -36,11 +38,9 @@ class TreeTabNodeTabCollection : public tabs::TabCollection {
     return tree_tab_node_id_;
   }
 
+  // A tab that's associated with this TreeTabNode.
   const tabs::TabInterface* current_tab() const { return current_tab_; }
   tabs::TabInterface* current_tab() { return current_tab_; }
-
-  int height() const { return height_; }
-  int level() const { return level_; }
 
   // Returns the top-level ancestor TreeTabNode in the hierarchy.
   TreeTabNodeTabCollection* GetTopLevelAncestor();
@@ -82,13 +82,8 @@ class TreeTabNodeTabCollection : public tabs::TabCollection {
   // dangling pointer issues.
   raw_ptr<tabs::TabInterface> current_tab_;
 
-  // The level of this node in the tree. Root is level 0, its children are
-  // level 1, and so on.
-  int level_ = 0;
-
-  // The height of the subtree rooted at this node. A leaf node has height 0.
-  // This is used for calculating the level of nodes efficiently.
-  int height_ = 0;
+  // A class that represents metadata about the tree tab node.
+  std::unique_ptr<TreeTabNode> node_;
 
   base::CallbackListSubscription will_detach_tab_subscription_;
 };
