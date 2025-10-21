@@ -401,7 +401,8 @@ gfx::Insets BraveBrowserViewLayout::GetContentsMargins() const {
 }
 
 bool BraveBrowserViewLayout::IsFullscreenForBrowser() const {
-  auto* exclusive_access_manager = browser_view_->GetExclusiveAccessManager();
+  ExclusiveAccessManager* exclusive_access_manager =
+      browser_view_->browser()->GetFeatures().exclusive_access_manager();
   if (!exclusive_access_manager) {
     return false;
   }
@@ -412,7 +413,8 @@ bool BraveBrowserViewLayout::IsFullscreenForBrowser() const {
 }
 
 bool BraveBrowserViewLayout::IsFullscreenForTab() const {
-  auto* exclusive_access_manager = browser_view_->GetExclusiveAccessManager();
+  ExclusiveAccessManager* exclusive_access_manager =
+      browser_view_->browser()->GetFeatures().exclusive_access_manager();
   if (!exclusive_access_manager) {
     return false;
   }
