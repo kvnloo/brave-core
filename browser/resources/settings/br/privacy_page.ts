@@ -130,6 +130,7 @@ function InsertCardanoSubpage (section: Element)
     `)
 }
 
+// <if expr="enable_ai_chat">
 function InsertBraveOpenAIChatSubpage (section: Element)
 {
   section.appendChild(
@@ -159,6 +160,7 @@ function InsertBraveOpenAIChatSubpage (section: Element)
       </template>
     `)
 }
+// </if>
 
 RegisterPolymerTemplateModifications({
   'settings-privacy-page': (templateContent) => {
@@ -173,11 +175,13 @@ RegisterPolymerTemplateModifications({
     if (isGoogleSignInFeatureEnabled) {
       InsertGoogleSignInSubpage(section)
     }
+    // <if expr="enable_ai_chat">
     const isOpenAIChatFromBraveSearchEnabled =
       loadTimeData.getBoolean('isOpenAIChatFromBraveSearchEnabled')
     if (isOpenAIChatFromBraveSearchEnabled) {
       InsertBraveOpenAIChatSubpage(section)
     }
+    // </if>
     const isNativeBraveWalletEnabled =
       loadTimeData.getBoolean('isNativeBraveWalletFeatureEnabled')
     const isCardanoDappSupportFeatureEnabled =

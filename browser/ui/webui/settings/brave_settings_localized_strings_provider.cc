@@ -533,6 +533,7 @@ void BraveAddCommonStrings(content::WebUIDataSource* html_source,
       {"braveShowFullscreenReminder",
        IDS_SETTINGS_SHOW_FULLSCREEN_REMINDER_OPTION_LABEL},
 
+#if BUILDFLAG(ENABLE_AI_CHAT)
       // Leo Assistant Page
       {"leoAssistant", IDS_SETTINGS_LEO_ASSISTANT},
       {"braveLeoAssistantShowIconOnToolbarLabel",
@@ -708,6 +709,7 @@ void BraveAddCommonStrings(content::WebUIDataSource* html_source,
       {"braveLeoAssistantClearSearch", IDS_SETTINGS_LEO_ASSISTANT_CLEAR_SEARCH},
       {"braveLeoAssistantSearchMemoriesPlaceholder",
        IDS_SETTINGS_LEO_ASSISTANT_SEARCH_MEMORIES_PLACEHOLDER},
+#endif  // BUILDFLAG(ENABLE_AI_CHAT)
 
       // Survey Panelist Page
       {"surveyPanelist", IDS_SETTINGS_SURVEY_PANELIST},
@@ -1028,12 +1030,14 @@ void BraveAddCommonStrings(content::WebUIDataSource* html_source,
   html_source->AddString("debounceLearnMoreURL", kDebounceLearnMoreUrl);
   html_source->AddString("enableNftDiscoveryLearnMoreURL",
                          kEnableNftDiscoveryLearnMoreUrl);
+#if BUILDFLAG(ENABLE_AI_CHAT)
   html_source->AddString(
       "braveLeoAssistantModelSystemPromptPlaceholder",
       base::ReplaceStringPlaceholders(
           l10n_util::GetStringUTF8(
               IDS_AI_CHAT_DEFAULT_CUSTOM_MODEL_SYSTEM_PROMPT),
           {"%datetime%"}, nullptr));
+#endif  // BUILDFLAG(ENABLE_AI_CHAT)
   auto confirmation_phrase =
       l10n_util::GetStringUTF16(IDS_SETTINGS_WALLET_RESET_CONFIRMATION_PHRASE);
   html_source->AddString("walletResetConfirmationPhrase", confirmation_phrase);

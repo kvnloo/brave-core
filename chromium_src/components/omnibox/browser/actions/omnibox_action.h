@@ -6,6 +6,7 @@
 #ifndef BRAVE_CHROMIUM_SRC_COMPONENTS_OMNIBOX_BROWSER_ACTIONS_OMNIBOX_ACTION_H_
 #define BRAVE_CHROMIUM_SRC_COMPONENTS_OMNIBOX_BROWSER_ACTIONS_OMNIBOX_ACTION_H_
 
+#include "brave/components/ai_chat/core/common/buildflags/buildflags.h"
 #include "brave/components/commander/common/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_COMMANDER)
@@ -16,10 +17,18 @@
   virtual commander::CommanderFrontendDelegate* GetCommanderDelegate
 #endif  // BUILDFLAG(ENABLE_COMMANDER)
 
-#define NewIncognitoWindow                               \
-  NewIncognitoWindow() = 0;                              \
+#if BUILDFLAG(ENABLE_AI_CHAT)
+#define BRAVE_OMNIBOX_ACTION_LEO_METHODS                 \
   virtual void OpenLeo(const std::u16string& query) = 0; \
-  virtual bool IsLeoProviderEnabled
+  virtual bool IsLeoProviderEnabled() = 0;
+#else
+#define BRAVE_OMNIBOX_ACTION_LEO_METHODS
+#endif
+
+#define NewIncognitoWindow         \
+  NewIncognitoWindow() = 0;        \
+  BRAVE_OMNIBOX_ACTION_LEO_METHODS \
+  virtual void NewIncognitoWindow_Unused
 
 #include <components/omnibox/browser/actions/omnibox_action.h>  // IWYU pragma: export
 #undef NewIncognitoWindow
