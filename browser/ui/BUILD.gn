@@ -63,7 +63,6 @@ source_set("ui") {
     "//brave/components/brave_origin",
     "//brave/components/brave_private_cdn",
     "//brave/components/brave_shields/core/browser",
-    "//brave/components/email_aliases/resources:email_aliases_panel_generated",
     "//brave/components/webcompat/core/common",
     "//chrome/browser/history",
     "//chrome/browser/ui:browser_navigator_params_headers",

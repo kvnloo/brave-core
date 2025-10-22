@@ -1,9 +1,12 @@
-/// <reference path="./mojom.d.ts" />
-import '../../../browser/resources/settings/email_aliases_page/email_aliases'
+// Copyright (c) 2025 The Brave Authors. All rights reserved.
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this file,
+// You can obtain one at https://mozilla.org/MPL/2.0/.
+
 import { createRoot } from 'react-dom/client'
 import * as React from 'react'
 import { StyleSheetManager } from 'styled-components'
-import { EmailAliasModal } from '../../../browser/resources/settings/email_aliases_page/content/email_aliases_modal'
+import { EmailAliasModal } from './content/email_aliases_modal'
 import {
   AuthenticationStatus,
   AuthState,
@@ -11,20 +14,23 @@ import {
   EmailAliasesServiceInterface,
   EmailAliasesServiceObserverInterface,
   EmailAliasesServiceObserverReceiver,
-  EmailAliasesService
+  EmailAliasesService,
 } from 'gen/brave/components/email_aliases/email_aliases.mojom.m'
 
 const rootEl = document.getElementById('mountPoint') as HTMLElement
 const shadow = rootEl.attachShadow({ mode: 'open' })
 
-const EmailAliasesPanelConnected = ({ emailAliasesService, bindObserver }: {
-  emailAliasesService: EmailAliasesServiceInterface,
+const EmailAliasesPanelConnected = ({
+  emailAliasesService,
+  bindObserver,
+}: {
+  emailAliasesService: EmailAliasesServiceInterface
   bindObserver: (observer: EmailAliasesServiceObserverInterface) => () => void
 }) => {
   const [authState, setAuthState] = React.useState<AuthState>({
     status: AuthenticationStatus.kStartup,
     email: '',
-    errorMessage: undefined
+    errorMessage: undefined,
   })
   const [aliasesState, setAliasesState] = React.useState<Alias[]>([])
   React.useEffect(() => {
@@ -42,13 +48,15 @@ const EmailAliasesPanelConnected = ({ emailAliasesService, bindObserver }: {
         if (status !== AuthenticationStatus.kAuthenticated) {
           setAliasesState([])
         }
-      }
+      },
     }
     return bindObserver(observer)
   }, [])
   return (
     <EmailAliasModal
-      onReturnToMain={(chosenEmail) => { emailAliasesService.notifyAliasCreationComplete(chosenEmail) }}
+      onReturnToMain={(chosenEmail) => {
+        emailAliasesService.notifyAliasCreationComplete(chosenEmail ?? null)
+      }}
       editing={false}
       mainEmail={authState.email}
       aliasCount={aliasesState.length}
@@ -75,10 +83,8 @@ const mount = (at: ShadowRoot) => {
         emailAliasesService={emailAliasesService}
         bindObserver={bindObserver}
       />
-    </StyleSheetManager>
+    </StyleSheetManager>,
   )
 }
 
 mount(shadow)
-
-
