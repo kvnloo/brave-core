@@ -1,8 +1,8 @@
 diff --git a/chrome/browser/ui/views/extensions/extensions_menu_view_platform_delegate_views.cc b/chrome/browser/ui/views/extensions/extensions_menu_view_platform_delegate_views.cc
-index b781884c055aee1c97cb130a88bb182490652fa6..c14810d591d5064e42766ee37cbb995676a6c837 100644
+index de039a11023be212247d8886238f8fba05e88256..b923a1ad410e4493d19f4a7d5a51cdc3fc03ec37 100644
 --- a/chrome/browser/ui/views/extensions/extensions_menu_view_platform_delegate_views.cc
 +++ b/chrome/browser/ui/views/extensions/extensions_menu_view_platform_delegate_views.cc
-@@ -327,6 +327,7 @@ void ExtensionsMenuViewPlatformDelegateViews::DetachFromModel() {
+@@ -329,6 +329,7 @@ void ExtensionsMenuViewPlatformDelegateViews::OnAccessRequestAdded(
  }
  
  void ExtensionsMenuViewPlatformDelegateViews::OpenMainPage() {
