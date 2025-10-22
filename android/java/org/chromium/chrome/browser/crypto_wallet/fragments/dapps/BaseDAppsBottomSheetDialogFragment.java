@@ -5,39 +5,39 @@
 
 package org.chromium.chrome.browser.crypto_wallet.fragments.dapps;
 
-import android.app.Activity;
-
 import org.chromium.brave_wallet.mojom.BraveWalletService;
 import org.chromium.brave_wallet.mojom.JsonRpcService;
 import org.chromium.brave_wallet.mojom.KeyringService;
-import org.chromium.chrome.browser.crypto_wallet.activities.BraveWalletBaseActivity;
+import org.chromium.build.annotations.NullMarked;
+import org.chromium.chrome.browser.app.domain.KeyringModel;
 import org.chromium.chrome.browser.crypto_wallet.fragments.WalletBottomSheetDialogFragment;
 
+@NullMarked
 public class BaseDAppsBottomSheetDialogFragment extends WalletBottomSheetDialogFragment {
-    public BraveWalletService getBraveWalletService() {
-        Activity activity = getActivity();
-        if (activity instanceof BraveWalletBaseActivity) {
-            return ((BraveWalletBaseActivity) activity).getBraveWalletService();
-        }
 
-        return null;
+    private final BraveWalletService mBraveWalletService;
+    private final KeyringService mKeyringService;
+    private final JsonRpcService mJsonRpcService;
+
+    public BaseDAppsBottomSheetDialogFragment(final KeyringModel keyringModel,
+                                              final BraveWalletService braveWalletService,
+                                              final KeyringService keyringService,
+                                              final JsonRpcService jsonRpcService) {
+        super(keyringModel);
+        mBraveWalletService = braveWalletService;
+        mKeyringService = keyringService;
+        mJsonRpcService = jsonRpcService;
+    }
+
+    public BraveWalletService getBraveWalletService() {
+        return mBraveWalletService;
     }
 
     public KeyringService getKeyringService() {
-        Activity activity = getActivity();
-        if (activity instanceof BraveWalletBaseActivity) {
-            return ((BraveWalletBaseActivity) activity).getKeyringService();
-        }
-
-        return null;
+        return mKeyringService;
     }
 
     public JsonRpcService getJsonRpcService() {
-        Activity activity = getActivity();
-        if (activity instanceof BraveWalletBaseActivity) {
-            return ((BraveWalletBaseActivity) activity).getJsonRpcService();
-        }
-
-        return null;
+        return mJsonRpcService;
     }
 }

@@ -24,6 +24,7 @@ import android.widget.TextView;
 import androidx.annotation.StringRes;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.chromium.chrome.browser.app.domain.KeyringModel;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -84,21 +85,17 @@ public class SiweMessageFragment extends WalletBottomSheetDialogFragment {
     private RecyclerView mRvDetails;
     private TwoLineItemRecyclerViewAdapter mTwoLineAdapter;
 
+    public SiweMessageFragment(final WalletModel walletModel) {
+        super(walletModel.getKeyringModel());
+        mWalletModel = walletModel;
+        mDappsModel = walletModel.getDappsModel();
+    }
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mExecutor = Executors.newSingleThreadExecutor();
         mHandler = new Handler(Looper.getMainLooper());
-        try {
-            BraveActivity activity = BraveActivity.getBraveActivity();
-            mWalletModel = activity.getWalletModel();
-            if (mWalletModel != null) {
-                mDappsModel = mWalletModel.getDappsModel();
-                registerKeyringObserver(mWalletModel.getKeyringModel());
-            }
-        } catch (BraveActivity.BraveActivityNotFoundException e) {
-            Log.e(TAG, "onCreate ", e);
-        }
     }
 
     @Override
@@ -299,7 +296,7 @@ public class SiweMessageFragment extends WalletBottomSheetDialogFragment {
         addDetail(items, R.string.brave_wallet_not_before, mSiweMessageData.notBefore);
         addDetail(items, R.string.brave_wallet_request_id, mSiweMessageData.requestId);
         addDetail(items, R.string.resources, getSiweResources(mSiweMessageData.resources));
-        TwoLineItemBottomSheetFragment fragment = TwoLineItemBottomSheetFragment.newInstance(items);
+        TwoLineItemBottomSheetFragment fragment = new TwoLineItemBottomSheetFragment(getKeyringModel(), items);
         fragment.mTitle = getString(R.string.brave_wallet_see_details);
         fragment.show(getParentFragmentManager(), TAG);
     }

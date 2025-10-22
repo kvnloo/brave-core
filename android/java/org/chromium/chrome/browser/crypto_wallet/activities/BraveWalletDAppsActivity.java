@@ -180,11 +180,11 @@ public class BraveWalletDAppsActivity extends BraveWalletBaseActivity
     private void processPendingDappsRequest() {
         mFragment = null;
         if (mActivityType == ActivityType.SIGN_MESSAGE) {
-            mFragment = new SignMessageFragment();
+            mFragment = new SignMessageFragment(mWalletModel, getBraveWalletService(), getKeyringService(), getJsonRpcService());
         } else if (mActivityType == ActivityType.SIWE_MESSAGE) {
-            mFragment = new SiweMessageFragment();
+            mFragment = new SiweMessageFragment(mWalletModel);
         } else if (mActivityType == ActivityType.SIGN_MESSAGE_ERROR) {
-            mFragment = new SignMessageErrorFragment();
+            mFragment = new SignMessageErrorFragment(mWalletModel, getBraveWalletService(), getKeyringService(), getJsonRpcService());
         } else if (mActivityType == ActivityType.ADD_TOKEN) {
             mFragment = new AddTokenFragment();
         } else if (mActivityType == ActivityType.CONFIRM_TRANSACTION) {
@@ -219,10 +219,10 @@ public class BraveWalletDAppsActivity extends BraveWalletBaseActivity
                                         mApproveTxBottomSheetDialogFragment.dismiss();
                                     }
                                     mApproveTxBottomSheetDialogFragment =
-                                            ApproveTxBottomSheetDialogFragment.newInstance(
+                                            new ApproveTxBottomSheetDialogFragment(
+                                                    mWalletModel,
                                                     mPendingTxHelper.getPendingTransactions(),
-                                                    transactionInfo,
-                                                    this);
+                                                    transactionInfo);
                                     mApproveTxBottomSheetDialogFragment.show(
                                             getSupportFragmentManager());
                                     mPendingTxHelper.mTransactionInfoLd.observe(
@@ -236,9 +236,9 @@ public class BraveWalletDAppsActivity extends BraveWalletBaseActivity
                     });
         } else if (mActivityType == ActivityType.ADD_ETHEREUM_CHAIN
                 || mActivityType == ActivityType.SWITCH_ETHEREUM_CHAIN) {
-            mFragment = new AddSwitchChainNetworkFragment(mActivityType, this);
+            mFragment = new AddSwitchChainNetworkFragment(mActivityType);
         } else if (mActivityType == ActivityType.SIGN_SOL_TRANSACTIONS) {
-            mFragment = SignSolTransactionsFragment.newInstance();
+            mFragment = new SignSolTransactionsFragment(mWalletModel, getBraveWalletService(), getKeyringService(), getJsonRpcService());
         } else if (mActivityType == ActivityType.CONNECT_ACCOUNT) {
             mFragment = new ConnectAccountFragment();
         } else if (mActivityType == GET_ENCRYPTION_PUBLIC_KEY_REQUEST

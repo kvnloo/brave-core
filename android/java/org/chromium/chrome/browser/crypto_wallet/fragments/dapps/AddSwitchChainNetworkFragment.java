@@ -8,6 +8,7 @@ package org.chromium.chrome.browser.crypto_wallet.fragments.dapps;
 import static org.chromium.chrome.browser.crypto_wallet.activities.BraveWalletDAppsActivity.ActivityType.ADD_ETHEREUM_CHAIN;
 import static org.chromium.chrome.browser.crypto_wallet.activities.BraveWalletDAppsActivity.ActivityType.SWITCH_ETHEREUM_CHAIN;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.text.Spanned;
@@ -32,6 +33,8 @@ import org.chromium.brave_wallet.mojom.CoinType;
 import org.chromium.brave_wallet.mojom.NetworkInfo;
 import org.chromium.brave_wallet.mojom.OriginInfo;
 import org.chromium.brave_wallet.mojom.SwitchChainRequest;
+import org.chromium.build.annotations.MonotonicNonNull;
+import org.chromium.build.annotations.NullMarked;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.app.BraveActivity;
 import org.chromium.chrome.browser.crypto_wallet.activities.BraveWalletBaseActivity;
@@ -40,6 +43,7 @@ import org.chromium.chrome.browser.crypto_wallet.adapters.FragmentNavigationItem
 import org.chromium.chrome.browser.crypto_wallet.adapters.TwoLineItemRecyclerViewAdapter.TwoLineItem;
 import org.chromium.chrome.browser.crypto_wallet.adapters.TwoLineItemRecyclerViewAdapter.TwoLineItemText;
 import org.chromium.chrome.browser.crypto_wallet.fragments.TwoLineItemFragment;
+import org.chromium.chrome.browser.crypto_wallet.listeners.TransactionConfirmationListener;
 import org.chromium.chrome.browser.crypto_wallet.util.NavigationItem;
 import org.chromium.chrome.browser.crypto_wallet.util.Utils;
 import org.chromium.chrome.browser.ui.favicon.FaviconHelper;
@@ -51,14 +55,19 @@ import org.chromium.url.GURL;
 import java.util.ArrayList;
 import java.util.List;
 
+@NullMarked
 public class AddSwitchChainNetworkFragment extends BaseDAppsFragment {
+    private static final String KEY_ACTIVITY_TYPE = "org.chromium.chrome.browser.crypto_wallet.fragments.dapps.KEY_ACTIVITY_TYPE";
     private final List<NavigationItem> mTabTitles;
     private final ActivityType mPanelType;
+
+    @MonotonicNonNull
+    private AddSwitchRequestProcessListener mAddSwitchRequestProcessListener;
+
     private NetworkInfo mNetworkInfo;
     private BraveWalletBaseActivity mBraveWalletBaseActivity;
     private SwitchChainRequest mSwitchChainRequest;
     private AddChainRequest mAddChainRequest;
-    private AddSwitchRequestProcessListener mAddSwitchRequestProcessListener;
     private boolean mHasMultipleAddSwitchChainRequest;
     private final List<TwoLineItem> mNetworks;
     private final List<TwoLineItem> mDetails;
@@ -74,11 +83,15 @@ public class AddSwitchChainNetworkFragment extends BaseDAppsFragment {
         mDetails = new ArrayList<>();
     }
 
-    public AddSwitchChainNetworkFragment(
-            ActivityType panelType,
-            AddSwitchRequestProcessListener addSwitchRequestProcessListener) {
-        this(panelType);
-        mAddSwitchRequestProcessListener = addSwitchRequestProcessListener;
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        if (context instanceof AddSwitchRequestProcessListener) {
+            mAddSwitchRequestProcessListener = (AddSwitchRequestProcessListener) context;
+        } else {
+            throw new IllegalStateException("Host activity must implement AddSwitchRequestProcessListener");
+        }
     }
 
     @Override

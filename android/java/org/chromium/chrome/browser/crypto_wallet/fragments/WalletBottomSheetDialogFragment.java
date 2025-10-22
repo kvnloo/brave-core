@@ -7,11 +7,9 @@ package org.chromium.chrome.browser.crypto_wallet.fragments;
 
 import android.content.DialogInterface;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
+import org.chromium.build.annotations.NullMarked;
 import org.chromium.chrome.browser.app.domain.KeyringModel;
 import org.chromium.chrome.browser.crypto_wallet.observers.KeyringServiceObserverImpl;
 
@@ -19,23 +17,26 @@ import org.chromium.chrome.browser.crypto_wallet.observers.KeyringServiceObserve
  * Base class for {@code BottomSheetDialogFragment} with wallet specific implementation
  * (auto-dismiss when locked, clean up etc).
  */
+@NullMarked
 public class WalletBottomSheetDialogFragment extends BottomSheetDialogFragment
         implements KeyringServiceObserverImpl.KeyringServiceObserverImplDelegate {
-    private KeyringServiceObserverImpl mKeyringObserver;
+    private final KeyringServiceObserverImpl mKeyringObserver;
+    private final KeyringModel mKeyringModel;
 
-    @Override
-    public void onDismiss(@NonNull DialogInterface dialog) {
-        super.onDismiss(dialog);
-        if (mKeyringObserver != null) {
-            mKeyringObserver.close();
-        }
+    public WalletBottomSheetDialogFragment(final KeyringModel keyringModel) {
+        mKeyringObserver = new KeyringServiceObserverImpl(this);
+        mKeyringModel = keyringModel;
+        mKeyringModel.registerKeyringObserver(mKeyringObserver);
     }
 
-    protected void registerKeyringObserver(@Nullable final KeyringModel keyringModel) {
-        if (keyringModel == null || mKeyringObserver != null) return;
+    protected KeyringModel getKeyringModel() {
+        return mKeyringModel;
+    }
 
-        mKeyringObserver = new KeyringServiceObserverImpl(this);
-        keyringModel.registerKeyringObserver(mKeyringObserver);
+    @Override
+    public void onDismiss(DialogInterface dialog) {
+        mKeyringObserver.close();
+        super.onDismiss(dialog);
     }
 
     @Override

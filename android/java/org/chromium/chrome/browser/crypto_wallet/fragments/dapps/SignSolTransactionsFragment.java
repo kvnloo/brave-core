@@ -26,17 +26,19 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
-import org.chromium.base.Log;
 import org.chromium.brave_wallet.mojom.AccountId;
 import org.chromium.brave_wallet.mojom.AccountInfo;
+import org.chromium.brave_wallet.mojom.BraveWalletService;
 import org.chromium.brave_wallet.mojom.CoinType;
+import org.chromium.brave_wallet.mojom.JsonRpcService;
+import org.chromium.brave_wallet.mojom.KeyringService;
 import org.chromium.brave_wallet.mojom.NetworkInfo;
 import org.chromium.brave_wallet.mojom.OriginInfo;
 import org.chromium.brave_wallet.mojom.SignSolTransactionsRequest;
 import org.chromium.brave_wallet.mojom.SolanaInstruction;
 import org.chromium.brave_wallet.mojom.SolanaTxData;
+import org.chromium.build.annotations.NullMarked;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.app.BraveActivity;
 import org.chromium.chrome.browser.app.domain.WalletModel;
 import org.chromium.chrome.browser.crypto_wallet.adapters.FragmentNavigationItemAdapter;
 import org.chromium.chrome.browser.crypto_wallet.adapters.TwoLineItemRecyclerViewAdapter;
@@ -56,8 +58,9 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+@NullMarked
 public class SignSolTransactionsFragment extends BaseDAppsBottomSheetDialogFragment {
-    private static final String TAG = "SignTransaction";
+    private final WalletModel mWalletModel;
 
     private List<NavigationItem> mTabTitles;
     private List<SignSolTransactionsRequest> mSignSolTransactionRequests;
@@ -75,15 +78,18 @@ public class SignSolTransactionsFragment extends BaseDAppsBottomSheetDialogFragm
     private LinearLayout mWarningLl;
     private TextView mTxLearnMore;
     private TextView mTvTxCounter;
-    private WalletModel mWalletModel;
     private SignTx mSignTxStep = SignTx.SIGN_RISK;
     private int mTxRequestNumber;
     private SignSolTransactionsRequest mSignSolTransactionsRequest;
     private Button mBtnCounterNext;
-    private List<SolanaTxData> mTxDatas;
+    private List<SolanaTxData> mTxData;
 
-    public static SignSolTransactionsFragment newInstance() {
-        return new SignSolTransactionsFragment();
+    public SignSolTransactionsFragment(final WalletModel walletModel,
+                                       final BraveWalletService braveWalletService,
+                                       final  KeyringService keyringService,
+                                       final JsonRpcService jsonRpcService) {
+        super(walletModel.getKeyringModel(), braveWalletService, keyringService, jsonRpcService);
+        mWalletModel = walletModel;
     }
 
     @Override
@@ -96,12 +102,6 @@ public class SignSolTransactionsFragment extends BaseDAppsBottomSheetDialogFragm
         mTabTitles.add(
                 new NavigationItem(getString(R.string.details), new TwoLineItemFragment(mDetails)));
         mSignSolTransactionRequests = Collections.emptyList();
-        try {
-            BraveActivity activity = BraveActivity.getBraveActivity();
-            mWalletModel = activity.getWalletModel();
-        } catch (BraveActivity.BraveActivityNotFoundException e) {
-            Log.e(TAG, "onCreate " + e);
-        }
     }
 
     @Override
@@ -174,7 +174,7 @@ public class SignSolTransactionsFragment extends BaseDAppsBottomSheetDialogFragm
             mTxRequestNumber = 0;
         }
         mSignSolTransactionsRequest = mSignSolTransactionRequests.get(mTxRequestNumber);
-        mTxDatas = TransactionUtils.safeSolData(mSignSolTransactionsRequest);
+        mTxData = TransactionUtils.safeSolData(mSignSolTransactionsRequest);
         if (mSignSolTransactionRequests.size() == 1) {
             mTvTxCounter.setVisibility(View.GONE);
             mBtnCounterNext.setVisibility(View.GONE);
@@ -202,17 +202,17 @@ public class SignSolTransactionsFragment extends BaseDAppsBottomSheetDialogFragm
     }
 
     private void updateSignDetails() {
-        if (mTxDatas == null || mTxDatas.isEmpty()) {
+        if (mTxData == null || mTxData.isEmpty()) {
             return;
         }
         mDetails.clear();
 
-        for (SolanaTxData txData : mTxDatas) {
+        for (SolanaTxData txData : mTxData) {
             for (SolanaInstruction solanaInstruction : txData.instructions) {
                 SolanaInstructionPresenter solanaInstructionPresenter =
                         new SolanaInstructionPresenter(solanaInstruction);
                 mDetails.addAll(solanaInstructionPresenter.toTwoLineList(requireContext()));
-                if (mTxDatas.size() > 1 || txData.instructions.length > 1) {
+                if (mTxData.size() > 1 || txData.instructions.length > 1) {
                     mDetails.add(new TwoLineItemRecyclerViewAdapter.TwoLineItemDivider());
                 }
             }
@@ -233,20 +233,14 @@ public class SignSolTransactionsFragment extends BaseDAppsBottomSheetDialogFragm
         mTxRequestNumber++;
     }
 
-    private void updateActionState(boolean isEnabled) {
+    private void updateActionState(final boolean isEnabled) {
         if (mSignTxStep == SignTx.SIGN_RISK) return;
         mBtCancel.setEnabled(isEnabled);
         mBtSign.setEnabled(isEnabled);
-        if (isEnabled) {
-            mBtSign.setBackgroundTintList(
-                    ColorStateList.valueOf(
-                            ContextCompat.getColor(requireContext(), R.color.brave_action_color)));
-
-        } else {
-            mBtSign.setBackgroundTintList(
-                    ColorStateList.valueOf(
-                            ContextCompat.getColor(requireContext(), R.color.baseline_neutral_30)));
-        }
+        mBtSign.setBackgroundTintList(
+                ColorStateList.valueOf(
+                        ContextCompat.getColor(requireContext(),
+                                isEnabled ? R.color.brave_action_color : R.color.baseline_neutral_30)));
     }
 
     private void fetchSignRequestData() {
@@ -256,7 +250,7 @@ public class SignSolTransactionsFragment extends BaseDAppsBottomSheetDialogFragm
                 .observe(
                         getViewLifecycleOwner(),
                         requests -> {
-                            if (requests.size() == 0) return;
+                            if (requests.isEmpty()) return;
                             mSignSolTransactionRequests = requests;
                             updateSignDataAndDetails();
                         });
@@ -303,10 +297,7 @@ public class SignSolTransactionsFragment extends BaseDAppsBottomSheetDialogFragm
             return;
         }
         assert (fromAccountId.coin == CoinType.SOL);
-        try {
-            BraveActivity activity = BraveActivity.getBraveActivity();
-            activity.getWalletModel()
-                    .getKeyringModel()
+            mWalletModel.getKeyringModel()
                     .getAccounts(
                             accountInfos -> {
                                 AccountInfo accountInfo =
@@ -321,17 +312,11 @@ public class SignSolTransactionsFragment extends BaseDAppsBottomSheetDialogFragm
                                 String accountText = accountInfo.name + "\n" + accountInfo.address;
                                 mAccountName.setText(accountText);
                             });
-        } catch (BraveActivity.BraveActivityNotFoundException e) {
-            Log.e(TAG, "updateAccount " + e);
-        }
     }
 
     private void updateNetwork(@CoinType.EnumType int coin, String chainId) {
         mNetworkName.setText("");
 
-        if (chainId == null) {
-            return;
-        }
         LiveDataUtil.observeOnce(
                 mWalletModel.getCryptoModel().getNetworkModel().mCryptoNetworks,
                 allNetworks -> {
