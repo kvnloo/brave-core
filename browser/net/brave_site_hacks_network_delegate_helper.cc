@@ -12,7 +12,10 @@
 #include "base/metrics/histogram_macros.h"
 #include "brave/components/brave_shields/content/browser/brave_shields_util.h"
 #include "brave/components/constants/url_constants.h"
+#include "brave/components/query_filter/pref_names.h"
 #include "brave/components/query_filter/utils.h"
+#include "chrome/browser/profiles/profile.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/common/referrer.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/url_request/url_request.h"
@@ -49,7 +52,17 @@ bool ApplyPotentialReferrerBlock(std::shared_ptr<BraveRequestInfo> ctx) {
 int OnBeforeURLRequest_SiteHacksWork(const ResponseCallback& next_callback,
                                      std::shared_ptr<BraveRequestInfo> ctx) {
   ApplyPotentialReferrerBlock(ctx);
-  if (ctx->allow_brave_shields) {
+
+  Profile* profile = Profile::FromBrowserContext(ctx->browser_context);
+  CHECK(profile);
+  const bool tracking_query_parameters_filtering_disabled_by_policy =
+      profile->GetPrefs()->IsManagedPreference(
+          query_filter::kTrackingQueryParametersFilteringDisabledByPolicy) &&
+      profile->GetPrefs()->GetBoolean(
+          query_filter::kTrackingQueryParametersFilteringDisabledByPolicy);
+
+  if (ctx->allow_brave_shields &&
+      !tracking_query_parameters_filtering_disabled_by_policy) {
     auto filtered_url = query_filter::MaybeApplyQueryStringFilter(
         ctx->initiator_url, ctx->redirect_source, ctx->request_url, ctx->method,
         ctx->internal_redirect);

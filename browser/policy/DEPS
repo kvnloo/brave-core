@@ -2,4 +2,7 @@ specific_include_rules = {
   "brave_talk_policy_unittest.cc": [
     "+components/sync_preferences",
   ],
+  "brave_simple_policy_map.h": [
+    "+brave/components/query_filter",
+  ]
 }
