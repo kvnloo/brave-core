@@ -45,7 +45,7 @@ class BraveShieldsSettings {
   void SetNoScriptEnabled(bool is_enabled, const GURL& url);
   bool IsNoScriptEnabled(const GURL& url);
 
-  mojom::ScriptBlockedByExtensionStatus GetScriptBlockedByExtensionStatus(
+  mojom::ContentSettingsOverriddenDataPtr GetJsContentSettingsOverriddenData(
       const GURL& url);
 
  private:

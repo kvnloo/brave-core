@@ -162,10 +162,11 @@ bool BraveShieldsSettings::IsNoScriptEnabled(const GURL& url) {
   return control_type != ControlType::ALLOW;
 }
 
-mojom::ScriptBlockedByExtensionStatus
-BraveShieldsSettings::GetScriptBlockedByExtensionStatus(const GURL& url) {
-  return brave_shields::GetScriptBlockedByExtensionStatus(
-      &*host_content_settings_map_, url);
+mojom::ContentSettingsOverriddenDataPtr
+BraveShieldsSettings::GetJsContentSettingsOverriddenData(const GURL& url) {
+  return brave_shields::GetContentSettingsOverriddenData(
+      &*host_content_settings_map_, url,
+      content_settings::mojom::ContentSettingsType::JAVASCRIPT);
 }
 
 }  // namespace brave_shields

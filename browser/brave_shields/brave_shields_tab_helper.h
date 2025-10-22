@@ -83,7 +83,7 @@ class BraveShieldsTabHelper
   bool IsForgetFirstPartyStorageFeatureEnabled() const;
   HttpsUpgradeMode GetHttpsUpgradeMode();
   bool GetNoScriptEnabled();
-  mojom::ScriptBlockedByExtensionStatus GetScriptBlockedByExtensionStatus();
+  mojom::ContentSettingsOverriddenDataPtr GetJsContentSettingsOverriddenData();
   bool GetForgetFirstPartyStorageEnabled();
   void SetAdBlockMode(AdBlockMode mode);
   void SetFingerprintMode(FingerprintMode mode);
