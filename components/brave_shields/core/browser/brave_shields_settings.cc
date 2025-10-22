@@ -165,7 +165,7 @@ bool BraveShieldsSettings::IsNoScriptEnabled(const GURL& url) {
 mojom::ContentSettingsOverriddenDataPtr
 BraveShieldsSettings::GetJsContentSettingsOverriddenData(const GURL& url) {
   return brave_shields::GetContentSettingsOverriddenData(
-      &*host_content_settings_map_, url,
+      &*host_content_settings_map_, url, GURL(),
       content_settings::mojom::ContentSettingsType::JAVASCRIPT);
 }
 
