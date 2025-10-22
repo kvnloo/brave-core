@@ -11,7 +11,6 @@
 #include "absl/strings/str_format.h"
 #include "base/byte_count.h"
 #include "base/check.h"
-#include "base/check.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
@@ -525,35 +524,27 @@ bool EmailAliasesService::IsReadyToCreate() const {
 
 void EmailAliasesService::NotifyAliasCreationComplete(
     const std::optional<std::string>& email) {
-  // Iterate a snapshot to avoid iterator invalidation if observers unregister
-  // themselves during the callback.
-  const auto observers_snapshot = email_aliases_bubble_observers_;
-  for (auto* observer : observers_snapshot) {
-    if (email_aliases_bubble_observers_.find(observer) !=
-        email_aliases_bubble_observers_.end()) {
-      observer->OnAliasCreationComplete(email);
-    }
+  for (auto& observer : email_aliases_bubble_observers_) {
+    observer.OnAliasCreationComplete(email);
   }
 }
 
 void EmailAliasesService::InvokeManageAliases() {
-  for (auto* observer : email_aliases_bubble_observers_) {
-    observer->OnInvokeManageAliases();
+  for (auto& observer : email_aliases_bubble_observers_) {
+    observer.OnInvokeManageAliases();
   }
 }
 
 void EmailAliasesService::AddBubbleObserver(
     EmailAliasesBubbleObserver* observer) {
-  if (observer) {
-    email_aliases_bubble_observers_.insert(observer);
-  }
+  CHECK(observer);
+  email_aliases_bubble_observers_.AddObserver(observer);
 }
 
 void EmailAliasesService::RemoveBubbleObserver(
     EmailAliasesBubbleObserver* observer) {
-  if (observer) {
-    email_aliases_bubble_observers_.erase(observer);
-  }
+  CHECK(observer);
+  email_aliases_bubble_observers_.RemoveObserver(observer);
 }
 
 }  // namespace email_aliases

@@ -7,13 +7,13 @@
 #define BRAVE_COMPONENTS_EMAIL_ALIASES_EMAIL_ALIASES_SERVICE_H_
 
 #include <memory>
-#include <set>
 #include <optional>
 #include <string>
 #include <string_view>
 
 #include "base/functional/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
@@ -32,10 +32,13 @@ class SimpleURLLoader;
 
 namespace email_aliases {
 
-class EmailAliasesBubbleObserver {
+class EmailAliasesBubbleObserver : public base::CheckedObserver {
  public:
-  virtual void OnAliasCreationComplete(const std::optional<std::string>& email) = 0;
-  virtual void OnInvokeManageAliases() = 0;
+  ~EmailAliasesBubbleObserver() override = default;
+
+  virtual void OnAliasCreationComplete(
+      const std::optional<std::string>& email) {}
+  virtual void OnInvokeManageAliases() {}
 };
 
 // The EmailAliasesService is responsible for managing the email aliases for a
@@ -232,7 +235,8 @@ class EmailAliasesService : public KeyedService,
   const int max_aliases_ = 5;
 
   // Observers that receive email alias creation updates.
-std::set<EmailAliasesBubbleObserver*> email_aliases_bubble_observers_;
+  base::ObserverList<EmailAliasesBubbleObserver>
+      email_aliases_bubble_observers_;
 
   // WeakPtrFactory to safely bind callbacks across async network operations.
   base::WeakPtrFactory<EmailAliasesService> weak_factory_{this};
