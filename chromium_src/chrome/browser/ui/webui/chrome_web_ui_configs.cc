@@ -23,10 +23,11 @@
 #include "brave/browser/ui/webui/brave_rewards/rewards_page_top_ui.h"
 #include "brave/browser/ui/webui/brave_settings_ui.h"
 #include "brave/browser/ui/webui/brave_shields/shields_panel_ui.h"
-#include "brave/browser/ui/webui/email_aliases/email_aliases_panel_ui.h"
 #include "brave/browser/ui/webui/brave_wallet/wallet_panel_ui.h"
+#include "brave/browser/ui/webui/email_aliases/email_aliases_panel_ui.h"
 #include "brave/browser/ui/webui/private_new_tab_page/brave_private_new_tab_ui.h"
 #include "brave/browser/ui/webui/webcompat_reporter/webcompat_reporter_ui.h"
+#include "brave/components/email_aliases/features.h"
 #if BUILDFLAG(ENABLE_SPEEDREADER)
 #include "brave/browser/ui/webui/speedreader/speedreader_toolbar_ui.h"
 #endif
@@ -85,7 +86,6 @@ void RegisterChromeWebUIConfigs() {
   map.AddWebUIConfig(std::make_unique<BravePrivateNewTabUIConfig>());
   map.AddWebUIConfig(std::make_unique<BraveSettingsUIConfig>());
   map.AddWebUIConfig(std::make_unique<ShieldsPanelUIConfig>());
-  map.AddWebUIConfig(std::make_unique<EmailAliasesPanelUIConfig>());
 #if BUILDFLAG(ENABLE_SPEEDREADER)
   map.AddWebUIConfig(std::make_unique<SpeedreaderToolbarUIConfig>());
 #endif
@@ -95,6 +95,9 @@ void RegisterChromeWebUIConfigs() {
       std::make_unique<webcompat_reporter::WebcompatReporterUIConfig>());
   if (brave_account::features::IsBraveAccountEnabled()) {
     map.AddWebUIConfig(std::make_unique<BraveAccountUIDesktopConfig>());
+  }
+  if (base::FeatureList::IsEnabled(email_aliases::kEmailAliases)) {
+    map.AddWebUIConfig(std::make_unique<EmailAliasesPanelUIConfig>());
   }
 #else   // !BUILDFLAG(IS_ANDROID)
   map.AddWebUIConfig(std::make_unique<NewTabTakeoverUIConfig>());
