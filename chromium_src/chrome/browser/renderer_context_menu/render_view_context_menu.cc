@@ -423,7 +423,6 @@ void OnRewriteSuggestionCompleted(
 
 }  // namespace
 
-
 BraveRenderViewContextMenu::BraveRenderViewContextMenu(
     content::RenderFrameHost& render_frame_host,
     const content::ContextMenuParams& params)
