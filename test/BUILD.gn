@@ -27,6 +27,7 @@ import("//extensions/buildflags/buildflags.gni")
 import("//testing/test.gni")
 import("//third_party/widevine/cdm/widevine.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
+import("//brave/components/ai_rewriter/common/buildflags/buildflags.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")
@@ -1171,7 +1172,6 @@ test("brave_browser_tests") {
       "//brave/browser/password_manager:browser_tests",
       "//brave/browser/sharing_hub:browser_tests",
       "//brave/browser/sync:browser_tests",
-      "//brave/browser/ui/ai_rewriter:browsertest",
       "//brave/browser/ui/geolocation:browser_tests",
       "//brave/browser/ui/tabs:tab_strip",
       "//brave/browser/ui/toolbar:brave_app_menu_browser_tests",
@@ -1188,6 +1188,10 @@ test("brave_browser_tests") {
       "//components/autofill/content/browser",
       "//components/autofill/core/browser",
     ]
+
+    if (enable_ai_rewriter) {
+      deps += [ "//brave/browser/ui/ai_rewriter:browsertest" ]
+    }
   }
 
   if (enable_commander) {

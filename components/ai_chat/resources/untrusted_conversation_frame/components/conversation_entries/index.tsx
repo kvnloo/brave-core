@@ -349,7 +349,7 @@ function ConversationEntries() {
                       && !firstEntryEdit.selectedText
                       && !showEditInput && (
                         <ContextActionsAssistant
-                          turnUuid={firstEntryEdit.uuid}
+                          turnUuid={firstEntryEdit.uuid ?? undefined}
                           turnModelKey={turnModelKey}
                           onEditAnswerClicked={
                             canEditEntry
