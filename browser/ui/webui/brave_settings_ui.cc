@@ -346,3 +346,9 @@ void BraveSettingsUI::BindInterface(
     mojo::MakeSelfOwnedReceiver(std::move(handler), std::move(receiver));
   }
 }
+
+void BraveSettingsUI::BindInterface(
+    mojo::PendingReceiver<color_change_listener::mojom::PageHandler>
+        pending_receiver) {
+  // TODO(anyone): fixme.
+}
