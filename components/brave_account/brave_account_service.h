@@ -27,6 +27,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 class PrefService;
 
@@ -60,7 +61,7 @@ class BraveAccountService : public KeyedService, public mojom::Authentication {
   // Provides dependency injection for testing.
   BraveAccountService(
       PrefService* pref_service,
-      std::unique_ptr<api_request_helper::APIRequestHelper> api_request_helper,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       OSCryptCallback encrypt_callback,
       OSCryptCallback decrypt_callback,
       std::unique_ptr<base::OneShotTimer> verify_result_timer);
@@ -91,9 +92,12 @@ class BraveAccountService : public KeyedService, public mojom::Authentication {
 
   void OnVerificationTokenChanged();
 
-  void ScheduleVerifyResult(base::TimeDelta delay = base::Seconds(0));
+  void ScheduleVerifyResult(
+      base::TimeDelta delay = base::Seconds(0),
+      std::unique_ptr<network::SimpleURLLoader> simple_url_loader = nullptr);
 
-  void VerifyResult();
+  void VerifyResult(
+      std::unique_ptr<network::SimpleURLLoader> simple_url_loader);
 
   void OnVerifyResult(
       int response_code,
@@ -101,7 +105,7 @@ class BraveAccountService : public KeyedService, public mojom::Authentication {
                      std::optional<endpoints::VerifyResult::Error>> reply);
 
   const raw_ptr<PrefService> pref_service_;
-  std::unique_ptr<api_request_helper::APIRequestHelper> api_request_helper_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   OSCryptCallback encrypt_callback_;
   OSCryptCallback decrypt_callback_;
   mojo::ReceiverSet<mojom::Authentication> authentication_receivers_;
