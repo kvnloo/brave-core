@@ -12,7 +12,6 @@
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -20,6 +19,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/task/thread_pool.h"
@@ -193,7 +193,7 @@ void NTPBackgroundImagesService::MaybeCheckForSponsoredComponentUpdate() {
       SCOPED_CRASH_KEY_STRING64(
           "Issue50267", "failure_reason",
           "sponsored_images_update_check_callback_ is null");
-      base::debug::DumpWithoutCrashing();
+      DUMP_WILL_BE_NOTREACHED();
     }
   }
 }
@@ -208,14 +208,14 @@ void NTPBackgroundImagesService::ScheduleNextSponsoredImagesComponentUpdate() {
     SCOPED_CRASH_KEY_STRING64(
         "Issue50267", "failure_reason",
         "sponsored_images_update_check_callback_ is null");
-    base::debug::DumpWithoutCrashing();
+    DUMP_WILL_BE_NOTREACHED();
     return;
   }
 
   if (!sponsored_images_component_id_) {
     SCOPED_CRASH_KEY_STRING64("Issue50267", "failure_reason",
                               "sponsored_images_component_id_ is null");
-    base::debug::DumpWithoutCrashing();
+    DUMP_WILL_BE_NOTREACHED();
     return;
   }
 
@@ -539,7 +539,7 @@ NTPSponsoredImagesData* NTPBackgroundImagesService::GetSponsoredImagesData(
   if (is_super_referrals_enabled) {
     SCOPED_CRASH_KEY_STRING64("Issue50267", "failure_reason",
                               "Super referrals are enabled");
-    base::debug::DumpWithoutCrashing();
+    DUMP_WILL_BE_NOTREACHED();
 
     if (super_referral) {
       if (super_referrals_images_data_ &&
@@ -623,7 +623,7 @@ void NTPBackgroundImagesService::OnGetSponsoredComponentJsonData(
       json_string, base::JSON_PARSE_CHROMIUM_EXTENSIONS);
   if (!json_value) {
     SCOPED_CRASH_KEY_STRING64("Issue50267", "failure_reason", "Invalid JSON");
-    base::debug::DumpWithoutCrashing();
+    DUMP_WILL_BE_NOTREACHED();
     DVLOG(2) << "Read json data failed. Invalid JSON data";
     return;
   }

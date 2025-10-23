@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/debug/crash_logging.h"
-#include "base/debug/dump_without_crashing.h"
+#include "base/notreached.h"
 #include "brave/components/brave_ads/core/internal/account/deposits/deposit_util.h"
 #include "brave/components/brave_ads/core/internal/common/logging_util.h"
 #include "brave/components/brave_ads/core/internal/creatives/new_tab_page_ads/creative_new_tab_page_ads_util.h"
@@ -89,7 +89,7 @@ void NewTabPageAdHandler::TriggerEvent(
                             static_cast<int>(mojom_ad_event_type));
     SCOPED_CRASH_KEY_STRING64("Issue50267", "failure_reason",
                               "Invalid creative_instance_id");
-    base::debug::DumpWithoutCrashing();
+    DUMP_WILL_BE_NOTREACHED();
     return std::move(callback).Run(/*success=*/false);
   }
 

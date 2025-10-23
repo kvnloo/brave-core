@@ -10,7 +10,7 @@
 
 #include "base/check.h"
 #include "base/debug/crash_logging.h"
-#include "base/debug/dump_without_crashing.h"
+#include "base/notreached.h"
 #include "base/time/time.h"
 #include "brave/components/brave_ads/core/internal/account/confirmations/confirmation_info.h"
 #include "brave/components/brave_ads/core/internal/account/confirmations/non_reward/non_reward_confirmation_util.h"
@@ -52,7 +52,7 @@ void Confirmations::Confirm(const TransactionInfo& transaction,
                               transaction.creative_instance_id);
     SCOPED_CRASH_KEY_STRING64("Issue50267", "failure_reason",
                               "Failed to build confirmation");
-    base::debug::DumpWithoutCrashing();
+    DUMP_WILL_BE_NOTREACHED();
     return BLOG(0, "Failed to build confirmation");
   }
 

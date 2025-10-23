@@ -8,8 +8,8 @@
 #include <string>
 #include <utility>
 
-#include "base/debug/dump_without_crashing.h"
 #include "base/hash/hash.h"
+#include "base/notreached.h"
 #include "brave/components/brave_shields/core/browser/brave_shields_p3a.h"
 #include "brave/components/brave_shields/core/common/brave_shield_utils.h"
 #include "brave/components/brave_shields/core/common/features.h"
@@ -206,7 +206,7 @@ void SetBraveShieldsEnabled(HostContentSettingsMap* map,
 #if DCHECK_IS_ON()
     NOTREACHED();
 #else
-    base::debug::DumpWithoutCrashing();
+    DUMP_WILL_BE_NOTREACHED();
     return;
 #endif
   }
