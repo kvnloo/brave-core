@@ -80,5 +80,6 @@ class ContainersSettingsHandler;
 #include <chrome/browser/ui/webui/settings/settings_ui.h>  // IWYU pragma: export
 
 #undef AddSettingsPageUIHandler
+#undef BIND_CONTAINERS_INTERFACES
 
 #endif  // BRAVE_CHROMIUM_SRC_CHROME_BROWSER_UI_WEBUI_SETTINGS_SETTINGS_UI_H_
