@@ -638,9 +638,7 @@ class SidebarBrowserWithSplitViewTest
         BrowserView::GetBrowserViewForBrowser(browser()));
   }
 
-  bool IsRoundedCornersEnabled() const {
-    return GetParam();
-  }
+  bool IsRoundedCornersEnabled() const { return GetParam(); }
 };
 
 IN_PROC_BROWSER_TEST_P(SidebarBrowserWithSplitViewTest,
