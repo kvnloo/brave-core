@@ -29,6 +29,8 @@
 #include "brave/ios/browser/brave_wallet/brave_wallet_service_factory.h"
 #include "brave/ios/browser/brave_wallet/meld_integration_service_factory.h"
 #include "brave/ios/browser/brave_wallet/swap_service_factory.h"
+#include "brave/ios/browser/ui/webui/brave_wallet/blockchain_images_source.h"
+#include "brave/ios/browser/ui/webui/sanitized_image_source.h"
 #include "brave/ios/web/webui/brave_web_ui_ios_data_source.h"
 #include "brave/ios/web/webui/brave_webui_utils.h"
 #include "components/grit/brave_components_resources.h"
@@ -53,6 +55,13 @@ WalletPageUI::WalletPageUI(web::WebUIIOS* web_ui, const GURL& url)
   source->AddBoolean(brave_wallet::mojom::kP3ACountTestNetworksLoadTimeKey,
                      base::CommandLine::ForCurrentProcess()->HasSwitch(
                          brave_wallet::mojom::kP3ACountTestNetworksSwitch));
+
+  auto* profile = ProfileIOS::FromWebUIIOS(web_ui);
+  web::URLDataSourceIOS::Add(profile, new SanitizedImageSource(profile));
+  base::FilePath path = profile->GetStatePath().DirName();
+  path = path.AppendASCII(brave_wallet::kWalletBaseDirectory);
+  web::URLDataSourceIOS::Add(profile,
+                             new brave_wallet::BlockchainImagesSource(path));
 
   web_ui->GetWebState()->GetInterfaceBinderForMainFrame()->AddInterface(
       base::BindRepeating(&WalletPageUI::BindInterface,
