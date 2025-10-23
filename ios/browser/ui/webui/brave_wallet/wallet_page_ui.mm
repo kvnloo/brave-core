@@ -36,7 +36,7 @@
 #include "ios/web/public/web_state.h"
 
 WalletPageUI::WalletPageUI(web::WebUIIOS* web_ui, const GURL& url)
-    : web::WebUIIOSController(web_ui, url.host()) {
+    : web::WebUIIOSController(web_ui, url.GetHost()) {
   // Create a URLDataSource and add resources.
 
   BraveWebUIIOSDataSource* source = brave::CreateAndAddWebUIDataSource(
