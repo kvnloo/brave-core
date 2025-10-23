@@ -79,7 +79,7 @@ export default {
           cookieBlockMode: CookieBlockMode.ALLOW,
           httpsUpgradeMode: HttpsUpgradeMode.DISABLED_MODE,
           isNoscriptEnabled: false,
-          scriptsBlockedByExtensionStatus: {},
+          scriptsBlockedOverrideStatus: {},
           isForgetFirstPartyStorageEnabled: false,
           webcompatSettings: {}
         },
