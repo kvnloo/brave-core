@@ -98,7 +98,7 @@ repack("resources") {
       "//brave/components/brave_private_new_tab_ui/resources/page:generated_resources",
       "//brave/components/brave_shields/resources/panel:brave_shields_panel_generated",
       "//brave/components/brave_welcome_ui:generated_resources",
-      "//brave/components/email_aliases/resources:email_aliases_panel_generated",
+      "//brave/components/email_aliases/resources:email_aliases_panel_generated_resources",
       "//brave/components/webcompat_reporter/ui:generated_resources",
     ]
 

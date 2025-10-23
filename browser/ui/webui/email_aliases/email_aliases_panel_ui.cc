@@ -19,7 +19,7 @@
 #include "ui/webui/webui_util.h"
 
 EmailAliasesPanelUI::EmailAliasesPanelUI(content::WebUI* web_ui)
-    : TopChromeWebUIController(web_ui, true) {
+    : TopChromeWebUIController(web_ui) {
   auto* browser_context = web_ui->GetWebContents()->GetBrowserContext();
   auto* source = content::WebUIDataSource::CreateAndAdd(browser_context,
                                                         kEmailAliasesPanelHost);

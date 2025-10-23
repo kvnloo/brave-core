@@ -6,18 +6,22 @@
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 
 #include <optional>
-#include "base/memory/raw_ptr.h"
 
 #include "base/check.h"
 #include "base/containers/fixed_flat_map.h"
 #include "base/containers/fixed_flat_set.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
+#include "base/no_destructor.h"
 #include "base/notimplemented.h"
+#include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "brave/browser/autocomplete/brave_autocomplete_scheme_classifier.h"
 #include "brave/browser/brave_shields/brave_shields_tab_helper.h"
 #include "brave/browser/cosmetic_filters/cosmetic_filters_tab_helper.h"
+#include "brave/browser/email_aliases/email_aliases_service_factory.h"
 #include "brave/browser/misc_metrics/profile_misc_metrics_service.h"
 #include "brave/browser/misc_metrics/profile_misc_metrics_service_factory.h"
 #include "brave/browser/renderer_context_menu/brave_spelling_options_submenu_observer.h"
@@ -25,22 +29,17 @@
 #include "brave/browser/ui/brave_pages.h"
 #include "brave/browser/ui/browser_commands.h"
 #include "brave/browser/ui/browser_dialogs.h"
+#include "brave/browser/ui/webui/email_aliases/email_aliases_panel_ui.h"
 #include "brave/components/ai_rewriter/common/buildflags/buildflags.h"
 #include "brave/components/constants/webui_url_constants.h"
-#include "brave/components/email_aliases/features.h"
-#include "brave/browser/ui/webui/email_aliases/email_aliases_panel_ui.h"
-#include "chrome/browser/ui/views/bubble/webui_bubble_manager.h"
-#include "chrome/browser/ui/browser_navigator.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_navigator_params.h"
-#include "content/public/browser/web_contents.h"
-#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "base/strings/strcat.h"
-#include "base/strings/string_number_conversions.h"
-#include "brave/browser/email_aliases/email_aliases_service_factory.h"
 #include "brave/components/email_aliases/email_aliases_service.h"
-#include "base/no_destructor.h"
-#include "base/logging.h"
+#include "brave/components/email_aliases/features.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/views/bubble/webui_bubble_manager.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "content/public/browser/web_contents.h"
 // (Using anchor view for bubble positioning; no explicit rect needed.)
 #include <memory>
 
@@ -67,8 +66,10 @@ class EmailAliasesBubbleObserverImpl final
   EmailAliasesBubbleObserverImpl(Profile* profile,
                                  Browser* browser,
                                  base::WeakPtr<content::WebContents> contents)
-      : profile_(profile), browser_(browser), web_contents_(std::move(contents)) {}
-  ~EmailAliasesBubbleObserverImpl() = default;
+      : profile_(profile),
+        browser_(browser),
+        web_contents_(std::move(contents)) {}
+  ~EmailAliasesBubbleObserverImpl() override = default;
 
   void OnAliasCreationComplete(
       const std::optional<std::string>& email) override {
@@ -87,9 +88,7 @@ class EmailAliasesBubbleObserverImpl final
     GetEmailAliasesBubbleObserver().reset();
   }
 
-  void OnInvokeManageAliases() override {
-    brave::ShowEmailAliases(browser_);
-  }
+  void OnInvokeManageAliases() override { brave::ShowEmailAliases(browser_); }
 
  private:
   raw_ptr<Profile> profile_;
@@ -104,9 +103,9 @@ class EmailAliasesBubbleObserverImpl final
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window/public/browser_window_features.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/common/channel_info.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
@@ -560,7 +559,8 @@ void BraveRenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
     case IDC_NEW_EMAIL_ALIAS: {
       auto* service =
-          email_aliases::EmailAliasesServiceFactory::GetServiceForProfile(GetProfile());
+          email_aliases::EmailAliasesServiceFactory::GetServiceForProfile(
+              GetProfile());
       if (!service) {
         brave::ShowEmailAliases(GetBrowser());
         break;
@@ -571,22 +571,38 @@ void BraveRenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
         break;
       }
       {
-        auto* browser_view = BrowserView::GetBrowserViewForBrowser(GetBrowser());
-        if (!browser_view) { brave::ShowEmailAliases(GetBrowser()); break; }
+        auto* browser_view =
+            BrowserView::GetBrowserViewForBrowser(GetBrowser());
+        if (!browser_view) {
+          brave::ShowEmailAliases(GetBrowser());
+          break;
+        }
         views::View* anchor_view = browser_view->GetLocationBarView();
-        if (!anchor_view) { brave::ShowEmailAliases(GetBrowser()); break; }
+        if (!anchor_view) {
+          brave::ShowEmailAliases(GetBrowser());
+          break;
+        }
         auto& mgr = GetEmailAliasesBubbleManager();
-        if (mgr && mgr->GetBubbleWidget() && mgr->GetBubbleWidget()->IsVisible()) {
+        if (mgr && mgr->GetBubbleWidget() &&
+            mgr->GetBubbleWidget()->IsVisible()) {
           mgr->CloseBubble();
           break;
         }
-        std::string url_with_field = base::StrCat({kEmailAliasesPanelURL, "?field=", base::NumberToString(params_.field_renderer_id)});
-        mgr = WebUIBubbleManager::Create<EmailAliasesPanelUI>(anchor_view, GetBrowser(), GURL(url_with_field), IDS_SETTINGS_EMAIL_ALIASES_LABEL);
+        std::string url_with_field = base::StrCat(
+            {kEmailAliasesPanelURL,
+             "?field=", base::NumberToString(params_.field_renderer_id)});
+        mgr = WebUIBubbleManager::Create<EmailAliasesPanelUI>(
+            anchor_view, GetBrowser(), GURL(url_with_field),
+            IDS_SETTINGS_EMAIL_ALIASES_LABEL);
         mgr->ShowBubble(std::nullopt, views::BubbleBorder::TOP_CENTER);
-        if (mgr->GetBubbleWidget()) { mgr->GetBubbleWidget()->SetVisible(true); }
+        if (mgr->GetBubbleWidget()) {
+          mgr->GetBubbleWidget()->SetVisible(true);
+        }
 
         // Register bubble observer to auto-close on alias creation completion.
-        auto* svc = email_aliases::EmailAliasesServiceFactory::GetServiceForProfile(GetProfile());
+        auto* svc =
+            email_aliases::EmailAliasesServiceFactory::GetServiceForProfile(
+                GetProfile());
         if (svc) {
           auto& ob = GetEmailAliasesBubbleObserver();
           if (!ob) {
