@@ -886,6 +886,16 @@ public class BytecodeTest {
                         Bundle.class));
         Assert.assertTrue(
                 methodExists(
+                        "org/chromium/chrome/browser/settings/SettingsIntentUtil",
+                        "createIntent",
+                        MethodModifier.STATIC,
+                        Intent.class,
+                        Context.class,
+                        String.class,
+                        Bundle.class,
+                        boolean.class));
+        Assert.assertTrue(
+                methodExists(
                         "org/chromium/components/browser_ui/media/MediaSessionHelper",
                         "showNotification",
                         MethodModifier.REGULAR,
